@@ -1,0 +1,16 @@
+{
+  "name": "vmcjs",
+  "description": "Node.js VMC library",
+  "version": "0.1.0",
+  "author": "Damian Beresford <Damian.Beresford@feedhenry.com>",
+  "directories": {
+    "lib": "lib"
+  },
+  "main" : "./lib/vmcjs.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies" : {
+    "async" : "*"
+  }
+}
