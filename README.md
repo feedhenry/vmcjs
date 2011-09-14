@@ -2,7 +2,7 @@
 
 A node.js library version of the CloudFoundry VMC gem.
 
-_Copyright 2010-2011, FeedHenry Ltd. Licensed under the
+_Copyright 2011, FeedHenry Ltd. Licensed under the
 MIT license, please see the LICENSE file.  All rights reserved._
 
 ## Installation
