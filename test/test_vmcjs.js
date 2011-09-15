@@ -43,7 +43,7 @@ module.exports = {
                   assert.equal(err, undefined, "Unexpected err in start: " + util.inspect(err));
                   testAppOk(vmc, appName, serviceName, function(err){
                     // finally test update
-                    vmc.update(appDir, appName, function(err, data) {
+                    vmc.update(appName, appDir, function(err, data) {
                       assert.equal(err, undefined, "Unexpected err in update: " + util.inspect(err));
                     });
                   });
@@ -88,7 +88,18 @@ module.exports = {
       gotError = true;
     }
     assert.ok(gotError);
-   } 
+   }, 
+
+  'test update nonexistent app..' : function() {
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.login(function(err, token) {
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      var appDir = './fixtures/helloworld';
+      vmc.update('ihopefullydontexist', appDir, function(err, app) {
+        assert.equal(err.status, 404, "Expected err to return a 404");
+      });
+    });
+  }
 }; 
 
 function testEnv(vmc, appName, callback) {

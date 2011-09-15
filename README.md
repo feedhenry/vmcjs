@@ -17,3 +17,16 @@ MIT license, please see the LICENSE file.  All rights reserved._
         console.dir(apps)
       });
     });
+
+See the tests for more sample API usage.
+
+## Running tests
+
+You need to set your own CloudFoundry account credentials before running the tests. First, set the following three environment variables:
+
+    export CF_TARGET=<CloudFoundry target> e.g. for a local micro instance http://api.<name>.cloudfoundry.me
+    export CF_EMAIL=<CloudFoundry user email> e.g. foo@bar.com
+    export CF_PWD=<CloudFoundry user password>
+
+Then run the tests with:
+    expresso -I lib
