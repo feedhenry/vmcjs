@@ -27,6 +27,8 @@ You need to set your own CloudFoundry account credentials before running the tes
     export CF_TARGET=<CloudFoundry target> e.g. for a local micro instance http://api.<name>.cloudfoundry.me
     export CF_EMAIL=<CloudFoundry user email> e.g. foo@bar.com
     export CF_PWD=<CloudFoundry user password>
+    export CF_ADMIN_EMAIL=<CloudFoundry administrator email> e.g. foo@vmware.com
+    export CF_ADMIN_PWD=<CloudFoundry administrator password>
 
 Then run the tests with:
     expresso -I lib
