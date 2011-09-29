@@ -7,8 +7,10 @@ var async = require('async');
 var target = process.env.CF_TARGET || assert.fail('CF_TARGET not set, please set in your environment');
 var email = process.env.CF_EMAIL || assert.fail('CF_EMAIL not set, please set in your environment');
 var pwd = process.env.CF_PWD || assert.fail('CF_PWD not set, please set in your environment');
+var adminEmail = process.env.CF_ADMIN_EMAIL || assert.fail('CF_ADMIN_EMAIL not set, please set in your environment');
+var adminPwd = process.env.CF_ADMIN_PWD || assert.fail('CF_ADMIN_PWD not set, please set in your environment');
 
-module.exports = {  
+module.exports = {
   'test basic target/login & list apps' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -31,7 +33,7 @@ module.exports = {
       vmc.deleteApp(appName, function(err, data){
         vmc.push(appName, appDir, function(err) {
           assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
-  
+
           var serviceName = 'redis-' + appName;
           var vendor = 'redis';
           vmc.createService(serviceName, vendor, function(err, data) {
@@ -53,8 +55,40 @@ module.exports = {
           });
         });
       });
-    });      
+    });
   },
+
+  'test push and update by proxy user': function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    var adminVmc = new vmcjs.VMC(target, adminEmail, adminPwd);
+    vmc.login(function(err, token){
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      adminVmc.login(function(err, token){
+        assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+        // set proxy user
+        adminVmc.proxyUser = email;
+        var appName = 'test-proxy-user';
+        var appDir = './fixtures/helloworld';
+        // delete app if exists as normal user.
+        vmc.deleteApp(appName, function(err, data){
+          // push app as admin user but it is pushed on the normal user
+          adminVmc.push(appName, appDir, function(err) {
+            assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
+            // the normal user can start app deployed by adminVmc
+            vmc.start(appName, function(err, data){
+              assert.equal(err, undefined, "Unexpected err in start: " + util.inspect(err));
+              // finally test update
+              vmc.update(appName, appDir, function(err, data) {
+                assert.equal(err, undefined, "Unexpected err in update: " + util.inspect(err));
+              });
+            });
+          });
+        });
+
+      });
+    });
+  },
+
 
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
@@ -63,7 +97,7 @@ module.exports = {
       var service = 'Redis-112345';
       var vendor = 'redis';
       vmc.createService(service, vendor, function(err, data) {
-        assert.equal(err, undefined, "Unexpected err in createService: " + util.inspect(err));        
+        assert.equal(err, undefined, "Unexpected err in createService: " + util.inspect(err));
         vmc.deleteService(service, function(err, data){
           assert.equal(err, undefined, "Unexpected err in deleteService: " + util.inspect(err));
         });
@@ -77,18 +111,18 @@ module.exports = {
 
     createApp(vmc, 'db1', appDir, function(err, results){
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
-    });  
+    });
   },
 
   'test bad credentials..' : function() {
     var gotError = false;
     try {
-      var vmc = new vmcjs.VMC(undefined, undefined, undefined); 
+      var vmc = new vmcjs.VMC(undefined, undefined, undefined);
     } catch (x) {
       gotError = true;
     }
     assert.ok(gotError);
-   }, 
+  },
 
   'test update nonexistent app..' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
@@ -100,17 +134,17 @@ module.exports = {
       });
     });
   }
-}; 
+};
 
 function testEnv(vmc, appName, callback) {
   vmc.addEnv(appName, "FOO", "BAR", function(err, data) {
     assert.equal(err, undefined, "Unexpected err in addEnv: " + util.inspect(err));
     vmc.env(appName, function(err, environment) {
-      assert.equal(err, undefined, "Unexpected err in env: " + util.inspect(err));      
+      assert.equal(err, undefined, "Unexpected err in env: " + util.inspect(err));
       vmc.delEnv(appName, "FOO", function(err, data){
         assert.equal(err, undefined, "Unexpected err in delEnv: " + util.inspect(err));
         callback(undefined);
-      });      
+      });
     });
   });
 };
