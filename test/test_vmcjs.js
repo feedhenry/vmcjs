@@ -11,6 +11,26 @@ var adminEmail = process.env.CF_ADMIN_EMAIL || assert.fail('CF_ADMIN_EMAIL not s
 var adminPwd = process.env.CF_ADMIN_PWD || assert.fail('CF_ADMIN_PWD not set, please set in your environment');
 
 module.exports = {
+  'test info': function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.info(function(err, info){
+      assert.equal(err, undefined, "Unexpected err in info: " + util.inspect(err));
+      assert.equal(info.description, "VMware\'s Cloud Application Platform");
+    });
+  },
+
+  'test userInfo': function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.login(function(err, token) {
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      vmc.userInfo(email, function(err, info) {
+        assert.equal(err, undefined, "Unexpected err in userInfo: " + util.inspect(err));
+        assert.equal(info.email, email);
+      });
+    });
+  },
+
+
   'test basic target/login & list apps' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -89,7 +109,6 @@ module.exports = {
     });
   },
 
-
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -154,7 +173,10 @@ function testAppOk(vmc, appName, service, callback) {
     assert.equal(err, undefined, "Unexpected err in appInfo: " + util.inspect(err));
     assert.equal(app.state, 'STARTED', 'App not started: ' + util.inspect(app));
     assert.notEqual(app.services.indexOf(service), -1, "App doesn't have service: " + service + " " + util.inspect(app));
-    callback(undefined);
+    vmc.appStats(appName, function(err, app){
+      assert.equal(err, undefined, "Unexpected err in appStats: " + util.inspect(err));
+      callback(undefined);
+    });
   });
 };
 
