@@ -31,6 +31,26 @@ module.exports = {
     });
   },
 
+  'test add/delete User': function(){
+    var vmc = new vmcjs.VMC(target, adminEmail, adminPwd);
+    vmc.login(function(err, token) {
+      var email = 'testuser1@example.com';
+      var pwd = 'testuser1';
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      vmc.addUser(email, pwd, function(err, info) {
+        assert.equal(err, undefined, "Unexpected err in addUser: " + util.inspect(err));
+        var userVmc = new vmcjs.VMC(target, email, pwd);
+        userVmc.login(function(err, token){
+          assert.equal(err, undefined, "Unexpected err in the created user login: " + util.inspect(err));
+          vmc.deleteUser(email, function(err, info){
+console.log ("HERE")
+            assert.equal(err, undefined, "Unexpected err in deleteUser: " + util.inspect(err));
+          });
+        });
+      });
+    });
+  },
+
   'test basic target/login & list apps' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
