@@ -11,6 +11,7 @@ var adminEmail = process.env.CF_ADMIN_EMAIL || assert.fail('CF_ADMIN_EMAIL not s
 var adminPwd = process.env.CF_ADMIN_PWD || assert.fail('CF_ADMIN_PWD not set, please set in your environment');
 
 module.exports = {
+
   'test info': function(){
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.info(function(err, info){
@@ -30,7 +31,6 @@ module.exports = {
     });
   },
 
-
   'test basic target/login & list apps' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -43,7 +43,6 @@ module.exports = {
 
   'test push and update' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
-
     vmc.login(function(err, token) {
       assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
       var appName = 'test3';
@@ -152,7 +151,21 @@ module.exports = {
         assert.equal(err.status, 404, "Expected err to return a 404");
       });
     });
+  },
+/* TODO - add vmc.logs functionality.
+  'test logs' : function() {
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    var appDir = './fixtures/helloworld';
+
+    createApp(vmc, 'kn1', appDir, function(err, results){
+      assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
+      vmc.logs('kn1', {all: true}, function(err, logs){
+  console.log("logs: " + util.inspect(logs))
+        
+      });
+    });
   }
+*/
 };
 
 function testEnv(vmc, appName, callback) {
