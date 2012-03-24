@@ -5,3 +5,4 @@ man/
 node_modules/
 *~
 nohup.out
+test/config.json
