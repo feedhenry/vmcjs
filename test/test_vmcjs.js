@@ -43,7 +43,6 @@ module.exports = {
         userVmc.login(function(err, token){
           assert.equal(err, undefined, "Unexpected err in the created user login: " + util.inspect(err));
           vmc.deleteUser(email, function(err, info){
-console.log ("HERE")
             assert.equal(err, undefined, "Unexpected err in deleteUser: " + util.inspect(err));
           });
         });

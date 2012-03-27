@@ -18,7 +18,7 @@ RELEASE_DIR = $(PACKAGE)-$(VERSION)
 all: clean npm_deps test 
 
 test:
-	expresso -I lib -c 
+	env NODE_PATH=`pwd`/lib expresso
 
 dist: npm_deps
 	rm -rf $(DIST_DIR) $(OUTPUT_DIR)

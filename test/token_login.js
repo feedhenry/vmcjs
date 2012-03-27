@@ -1,5 +1,5 @@
 var vmcjs = require('../lib/vmcjs');
-
+/*
 var config = require('./config.json');
 var token = config.token;
 var username = config.username;
@@ -20,3 +20,4 @@ var vmc_token = new vmcjs.VMC("http://api.cloudfoundry.com", undefined, undefine
 vmc_token.info(function(err, data){
 	console.dir(data.frameworks.node.runtimes[1].version);
 });
+*/
