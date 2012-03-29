@@ -127,6 +127,37 @@ module.exports = {
     });
   },
 
+  'test push with manifest' : function() {
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.login(function(err, token) {
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      var appName = 'test-with-manifest';
+      var appDir = './fixtures/helloworld';
+      var uri = require('url').parse(target);
+      var rootTarget = uri.hostname.replace('api', '');
+      var manifest = {
+        resources: {
+          memory:128
+        },
+        instances:2,
+        name: appName,
+        staging:{
+          framework:'node',
+          runtime: null
+        },
+        uris:[appName + rootTarget, appName + '-2' + rootTarget]
+      };
+
+      // delete our test app if already exists (purposely ignore any errors)
+      vmc.deleteApp(appName, function(err, data){
+        vmc.push(appName, appDir, manifest, function(err) {
+          console.log('pushed'+ err);
+          assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
+        });
+      });
+    });
+  },
+  
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
