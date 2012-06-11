@@ -157,7 +157,7 @@ module.exports = {
       });
     });
   },
-  
+
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -177,8 +177,58 @@ module.exports = {
     var vmc = new vmcjs.VMC(target, email, pwd);
     var appDir = './fixtures/helloworld';
 
-    createApp(vmc, 'db1', appDir, function(err, results){
+    createApp(vmc, 'test-db1', appDir, function(err, results){
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
+    });
+  },
+
+  'test delete app with bound service' : function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    var appDir = './fixtures/helloworld';
+    var appName = 'test-db2';
+    createApp(vmc, appName, appDir, function(err, results){
+      assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
+      // function testAppOk(vmc, appName, service, callback) {
+      testAppOk(vmc, appName, 'redis-' + appName, function(err, results){
+        assert.equal(err, undefined, "Unexpected err in the service existance: " + util.inspect(err));
+        vmc.deleteApp(appName, function(err, results){
+          assert.equal(err, undefined, "Unexpected err in deleting app: " + util.inspect(err));
+          vmc.provisionedServices(function(err, results){
+            assert.equal(err, undefined, "Unexpected err in list services: " + util.inspect(err));
+            var services = results.filter(function(v){
+              return v.name == 'redis-test-db2';
+            });
+            assert.equal(services.length, 0, 'Bound service is not deleted.');
+          });
+        });
+      });
+    });
+  },
+
+  'test delete app without bound service' : function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    var appDir = './fixtures/helloworld';
+    var appName = 'test-db3';
+    // ensure service does not exist at first.
+    vmc.deleteService('redis-' + appName, function(err, results){
+      // create app with service.
+      createApp(vmc, appName, appDir, function(err, results){
+        assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
+        testAppOk(vmc, appName, 'redis-' + appName, function(err, results){
+          assert.equal(err, undefined, "Unexpected err in the service existance: " + util.inspect(err));
+          // delete without service false flag.
+          vmc.deleteApp(appName, false, function(err, results){
+            assert.equal(err, undefined, "Unexpected err in deleting app: " + util.inspect(err));
+            vmc.provisionedServices(function(err, results){
+              assert.equal(err, undefined, "Unexpected err in list services: " + util.inspect(err));
+              var services = results.filter(function(v){
+                return v.name == 'redis-' + appName;
+              });
+              assert.equal(services.length, 1, 'Bound service is not deleted.');
+            });
+          });
+        });
+      });
     });
   },
 
@@ -211,7 +261,7 @@ module.exports = {
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
       vmc.logs('kn1', {all: true}, function(err, logs){
   console.log("logs: " + util.inspect(logs))
-        
+
       });
     });
   }
@@ -249,6 +299,7 @@ function createApp(vmc, appName, appDir, cb) {
     function(callback) { vmc.login(callback);},
     function(callback) { vmc.deleteApp(appName, function(err, data){ callback();});}, // ignore any error from delete
     function(callback) { vmc.push(appName, appDir, callback);},
+    function(callback) { vmc.deleteService('redis-' + appName, function(err, data){ callback();});}, // ignore any error from delete
     function(callback) { vmc.createService('redis-' + appName, 'redis', callback);},
     function(callback) { vmc.bindService('redis-' + appName, appName, callback);},
     function(callback) { vmc.start(appName, callback);},
