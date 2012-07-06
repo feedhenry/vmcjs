@@ -157,7 +157,44 @@ module.exports = {
       });
     });
   },
+  
+  'test push-war': function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.login(function(err, token) {
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      var appName = 'test-push-war';
+      var appDir = './fixtures/hellojava/';
+      var uri = require('url').parse(target);
+      var rootTarget = uri.hostname.replace('api', '');
+      var manifest = {
+        resources: {
+          memory:512
+        },
+        instances:1,
+        name: appName,
+        staging:{
+          framework:'java_web',
+          runtime: 'java'
+        },
+        uris:[appName + rootTarget, appName + '-2' + rootTarget]
+      };
 
+      // delete our test app if already exists (purposely ignore any errors)
+      vmc.deleteApp(appName, function(err, data){
+        vmc.push(appName, appDir, manifest, function(err) {
+          assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
+          vmc.start(appName, function(err, data){
+            assert.equal(err, undefined, "Unexpected err in start: " + util.inspect(err));
+            // finally test update
+            vmc.update(appName, appDir, function(err, data) {
+              assert.equal(err, undefined, "Unexpected err in update: " + util.inspect(err));
+            });
+          });
+        });
+      });
+    });
+  },
+  
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
