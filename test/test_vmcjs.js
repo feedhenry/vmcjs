@@ -9,6 +9,7 @@ var email = process.env.CF_EMAIL || assert.fail('CF_EMAIL not set, please set in
 var pwd = process.env.CF_PWD || assert.fail('CF_PWD not set, please set in your environment');
 var adminEmail = process.env.CF_ADMIN_EMAIL || assert.fail('CF_ADMIN_EMAIL not set, please set in your environment');
 var adminPwd = process.env.CF_ADMIN_PWD || assert.fail('CF_ADMIN_PWD not set, please set in your environment');
+var appprefix = process.env.APP_PREFIX || "";
 
 module.exports = {
 
@@ -31,25 +32,6 @@ module.exports = {
     });
   },
 
-  'test add/delete User': function(){
-    var vmc = new vmcjs.VMC(target, adminEmail, adminPwd);
-    vmc.login(function(err, token) {
-      var email = 'testuser1@example.com';
-      var pwd = 'testuser1';
-      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      vmc.addUser(email, pwd, function(err, info) {
-        assert.equal(err, undefined, "Unexpected err in addUser: " + util.inspect(err));
-        var userVmc = new vmcjs.VMC(target, email, pwd);
-        userVmc.login(function(err, token){
-          assert.equal(err, undefined, "Unexpected err in the created user login: " + util.inspect(err));
-          vmc.deleteUser(email, function(err, info){
-            assert.equal(err, undefined, "Unexpected err in deleteUser: " + util.inspect(err));
-          });
-        });
-      });
-    });
-  },
-
   'test basic target/login & list apps' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
@@ -64,7 +46,7 @@ module.exports = {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
       assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      var appName = 'test3';
+      var appName = appprefix + 'test3';
       var appDir = './fixtures/helloworld';
 
       // delete our test app if already exists (purposely ignore any errors)
@@ -96,42 +78,11 @@ module.exports = {
     });
   },
 
-  'test push and update by proxy user': function(){
-    var vmc = new vmcjs.VMC(target, email, pwd);
-    var adminVmc = new vmcjs.VMC(target, adminEmail, adminPwd);
-    vmc.login(function(err, token){
-      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      adminVmc.login(function(err, token){
-        assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-        // set proxy user
-        adminVmc.proxyUser = email;
-        var appName = 'test-proxy-user';
-        var appDir = './fixtures/helloworld';
-        // delete app if exists as normal user.
-        vmc.deleteApp(appName, function(err, data){
-          // push app as admin user but it is pushed on the normal user
-          adminVmc.push(appName, appDir, function(err) {
-            assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
-            // the normal user can start app deployed by adminVmc
-            vmc.start(appName, function(err, data){
-              assert.equal(err, undefined, "Unexpected err in start: " + util.inspect(err));
-              // finally test update
-              vmc.update(appName, appDir, function(err, data) {
-                assert.equal(err, undefined, "Unexpected err in update: " + util.inspect(err));
-              });
-            });
-          });
-        });
-
-      });
-    });
-  },
-
   'test push with manifest' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
       assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      var appName = 'test-with-manifest';
+      var appName = appprefix + 'test-with-manifest';
       var appDir = './fixtures/helloworld';
       var uri = require('url').parse(target);
       var rootTarget = uri.hostname.replace('api', '');
@@ -151,18 +102,17 @@ module.exports = {
       // delete our test app if already exists (purposely ignore any errors)
       vmc.deleteApp(appName, function(err, data){
         vmc.push(appName, appDir, manifest, function(err) {
-          console.log('pushed'+ err);
           assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
         });
       });
     });
   },
-  
+
   'test push-war': function(){
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
       assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      var appName = 'test-push-war';
+      var appName = appprefix + 'test-push-war';
       var appDir = './fixtures/hellojava/';
       var uri = require('url').parse(target);
       var rootTarget = uri.hostname.replace('api', '');
@@ -194,12 +144,12 @@ module.exports = {
       });
     });
   },
-  
+
   'test services' : function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.login(function(err, token) {
       assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
-      var service = 'Redis-112345';
+      var service = appprefix + 'Redis-112345';
       var vendor = 'redis';
       vmc.createService(service, vendor, function(err, data) {
         assert.equal(err, undefined, "Unexpected err in createService: " + util.inspect(err));
@@ -222,7 +172,7 @@ module.exports = {
   'test delete app with bound service' : function(){
     var vmc = new vmcjs.VMC(target, email, pwd);
     var appDir = './fixtures/helloworld';
-    var appName = 'test-db2';
+    var appName = appprefix + 'test-db2';
     createApp(vmc, appName, appDir, function(err, results){
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
       // function testAppOk(vmc, appName, service, callback) {
@@ -245,7 +195,7 @@ module.exports = {
   'test delete app without bound service' : function(){
     var vmc = new vmcjs.VMC(target, email, pwd);
     var appDir = './fixtures/helloworld';
-    var appName = 'test-db3';
+    var appName = appprefix + 'test-db3';
     // ensure service does not exist at first.
     vmc.deleteService('redis-' + appName, function(err, results){
       // create app with service.
@@ -303,6 +253,63 @@ module.exports = {
     });
   }
 */
+  'test request timeout': function() {
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    vmc.info({timeout: 10}, function(err, info) {
+      assert.notEqual(err, undefined);
+    });
+  },
+
+//Admin Tests
+  'test push and update by proxy user': function(){
+    var vmc = new vmcjs.VMC(target, email, pwd);
+    var adminVmc = new vmcjs.VMC(target, adminEmail, adminPwd);
+    vmc.login(function(err, token){
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      adminVmc.login(function(err, token){
+        assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+        // set proxy user
+        adminVmc.proxyUser = email;
+        var appName = appprefix + 'test-proxy-user';
+        var appDir = './fixtures/helloworld';
+        // delete app if exists as normal user.
+        vmc.deleteApp(appName, function(err, data){
+          // push app as admin user but it is pushed on the normal user
+          adminVmc.push(appName, appDir, function(err) {
+            assert.equal(err, undefined, "Unexpected err in push: " + util.inspect(err));
+            // the normal user can start app deployed by adminVmc
+            vmc.start(appName, function(err, data){
+              assert.equal(err, undefined, "Unexpected err in start: " + util.inspect(err));
+              // finally test update
+              vmc.update(appName, appDir, function(err, data) {
+                assert.equal(err, undefined, "Unexpected err in update: " + util.inspect(err));
+              });
+            });
+          });
+        });
+
+      });
+    });
+  },
+
+  'test add/delete User': function(){
+    var vmc = new vmcjs.VMC(target, adminEmail, adminPwd);
+    vmc.login(function(err, token) {
+      var email = 'testuser1@example.com';
+      var pwd = 'testuser1';
+      assert.equal(err, undefined, "Unexpected err in login: " + util.inspect(err));
+      vmc.addUser(email, pwd, function(err, info) {
+        assert.equal(err, undefined, "Unexpected err in addUser: " + util.inspect(err));
+        var userVmc = new vmcjs.VMC(target, email, pwd);
+        userVmc.login(function(err, token){
+          assert.equal(err, undefined, "Unexpected err in the created user login: " + util.inspect(err));
+          vmc.deleteUser(email, function(err, info){
+            assert.equal(err, undefined, "Unexpected err in deleteUser: " + util.inspect(err));
+          });
+        });
+      });
+    });
+  }
 };
 
 function testEnv(vmc, appName, callback) {
