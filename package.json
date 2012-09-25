@@ -1,7 +1,7 @@
 {
   "name": "vmcjs",
   "description": "Node.js VMC library",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "author": "Damian Beresford <Damian.Beresford@feedhenry.com>",
   "repository" : { "type" : "git",
     "url" : "https://github.com/feedhenry/vmcjs"
