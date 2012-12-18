@@ -239,20 +239,37 @@ module.exports = {
       });
     });
   },
-/* TODO - add vmc.logs functionality.
+
   'test logs' : function() {
+    console.log('tgt: ' + target + ', email: ' + email + ', pwd: ' + pwd);
     var vmc = new vmcjs.VMC(target, email, pwd);
     var appDir = './fixtures/helloworld';
-
-    createApp(vmc, 'kn1', appDir, function(err, results){
+    var appName = 'applogtest2';
+    createApp(vmc, appName, appDir, function(err, results){
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
-      vmc.logs('kn1', {all: true}, function(err, logs){
-  console.log("logs: " + util.inspect(logs))
-
+      vmc.appLogs(appName, function(err, logs){
+        console.log("logs: " + util.inspect(logs));
+        assert.ok(util.isArray(logs), "Expected an array of log file names");
+        assert.ok(logs.length >= 2, "Expected 2 or more log file names");
+        console.log('got list of logfiles: ', logs);
+        var numfiles = 0;
+        async.forEachSeries(logs, function (logFile, cb) {
+          assert.ok(logFile.name, "should have log file name");
+          assert.ok(logFile.size, "should have logfile size field");
+          vmc.appLog(appName, logFile.name, function(err, logData) {
+            assert.ok(!err);
+            numfiles += 1;
+            console.log('got file: ' + logFile.name + ', data: ', logData);
+            return cb();
+          });
+        }, function (err) {
+          assert.ok(!err);
+          assert.ok(numfiles > 1, "Should be at least 2 logfiles");
+        });
       });
     });
-  }
-*/
+  },
+
   'test request timeout': function() {
     var vmc = new vmcjs.VMC(target, email, pwd);
     vmc.info({timeout: 10}, function(err, info) {
