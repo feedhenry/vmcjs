@@ -245,10 +245,12 @@ module.exports = {
     var vmc = new vmcjs.VMC(target, email, pwd);
     var appDir = './fixtures/helloworld';
     var appName = 'applogtest2';
+    var instance = 0;
     createApp(vmc, appName, appDir, function(err, results){
       assert.equal(err, undefined, "Unexpected err in createApp: " + util.inspect(err));
-      vmc.appLogs(appName, function(err, logs){
+      vmc.appLogs(appName, instance, function(err, logs){
         console.log("logs: " + util.inspect(logs));
+        assert.ok(!err, "Error returned from appLogs: " + JSON.stringify(err));
         assert.ok(util.isArray(logs), "Expected an array of log file names");
         assert.ok(logs.length >= 2, "Expected 2 or more log file names");
         console.log('got list of logfiles: ', logs);
@@ -256,7 +258,7 @@ module.exports = {
         async.forEachSeries(logs, function (logFile, cb) {
           assert.ok(logFile.name, "should have log file name");
           assert.ok(logFile.size, "should have logfile size field");
-          vmc.appLog(appName, logFile.name, function(err, logData) {
+          vmc.appLog(appName, logFile.name, instance, function(err, logData) {
             assert.ok(!err);
             numfiles += 1;
             console.log('got file: ' + logFile.name + ', data: ', logData);
