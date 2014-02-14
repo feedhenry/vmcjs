@@ -1,4 +1,4 @@
-# vmcjs
+# vmcjs [![NPM version](https://badge.fury.io/js/vmcjs.png)](http://badge.fury.io/js/vmcjs)
 
 A node.js library version of the CloudFoundry VMC gem.
 
