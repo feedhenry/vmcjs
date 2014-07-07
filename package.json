@@ -3,17 +3,19 @@
   "description": "Node.js VMC library",
   "version": "0.1.12",
   "author": "Damian Beresford <Damian.Beresford@feedhenry.com>",
-  "repository" : { "type" : "git",
-    "url" : "https://github.com/feedhenry/vmcjs"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/feedhenry/vmcjs"
   },
   "directories": {
     "lib": "lib"
   },
-  "main" : "./lib/vmcjs.js",
+  "main": "./lib/vmcjs.js",
   "engines": {
     "node": "*"
   },
-  "dependencies" : {
-    "async" : "*"
-  }
+  "dependencies": {
+    "async": "*"
+  },
+  "license": "MIT"
 }
